@@ -32,33 +32,22 @@ async function searchResults(keyword) {
         const responseText = await soraFetch(browseUrl);
         const html = await responseText.text();
 
-        // Extract the __NUXT__ data from the page
-        const nuxtMatch = html.match(/window\.__NUXT__\s*=\s*({.+?});?\s*<\/script>/s);
-        if (!nuxtMatch) {
-            console.log("Could not find __NUXT__ data, trying trending as fallback");
-            // Fallback to trending if tag doesn't exist
+        // Extract video URLs from HTML links
+        const videoLinks = html.match(/\/videos\/hentai\/([a-z0-9-]+)/g);
+
+        if (!videoLinks || videoLinks.length === 0) {
+            console.log("No videos found, trying trending as fallback");
             return await fetchTrending();
         }
 
-        // Parse the NUXT data
-        const nuxtData = JSON.parse(nuxtMatch[1]);
+        // Get unique slugs
+        const uniqueSlugs = [...new Set(videoLinks.map(link => link.replace('/videos/hentai/', '')))];
 
-        // Navigate to the videos array
-        let videos = [];
-        if (nuxtData && nuxtData.data && nuxtData.data[0] && nuxtData.data[0].hentai_videos) {
-            videos = nuxtData.data[0].hentai_videos;
-        }
-
-        // If no videos found with this tag, try trending as fallback
-        if (!videos || videos.length === 0) {
-            console.log("No videos found for tag, trying trending");
-            return await fetchTrending();
-        }
-
-        const transformedResults = videos.map(video => ({
-            title: video.name || "Untitled",
-            image: video.cover_url || `https://hanime-cdn.com/images/covers/${video.slug}-cv1.png`,
-            href: `https://hanime.tv/videos/hentai/${video.slug}`
+        // Create results with slug-based data
+        const transformedResults = uniqueSlugs.map(slug => ({
+            title: slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+            image: `https://hanime-cdn.com/images/covers/${slug}-cv1.png`,
+            href: `https://hanime.tv/videos/hentai/${slug}`
         }));
 
         console.log("Found videos:", transformedResults.length);
@@ -83,21 +72,21 @@ async function fetchTrending() {
         const responseText = await soraFetch(`https://hanime.tv/browse/trending`);
         const html = await responseText.text();
 
-        const nuxtMatch = html.match(/window\.__NUXT__\s*=\s*({.+?});?\s*<\/script>/s);
-        if (!nuxtMatch) {
+        // Extract video URLs from HTML links
+        const videoLinks = html.match(/\/videos\/hentai\/([a-z0-9-]+)/g);
+
+        if (!videoLinks || videoLinks.length === 0) {
             return JSON.stringify([]);
         }
 
-        const nuxtData = JSON.parse(nuxtMatch[1]);
-        let videos = [];
-        if (nuxtData && nuxtData.data && nuxtData.data[0] && nuxtData.data[0].hentai_videos) {
-            videos = nuxtData.data[0].hentai_videos;
-        }
+        // Get unique slugs
+        const uniqueSlugs = [...new Set(videoLinks.map(link => link.replace('/videos/hentai/', '')))];
 
-        const transformedResults = videos.map(video => ({
-            title: video.name || "Untitled",
-            image: video.cover_url || `https://hanime-cdn.com/images/covers/${video.slug}-cv1.png`,
-            href: `https://hanime.tv/videos/hentai/${video.slug}`
+        // Create results with slug-based data
+        const transformedResults = uniqueSlugs.map(slug => ({
+            title: slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+            image: `https://hanime-cdn.com/images/covers/${slug}-cv1.png`,
+            href: `https://hanime.tv/videos/hentai/${slug}`
         }));
 
         console.log("Fetched trending videos:", transformedResults.length);
@@ -118,41 +107,25 @@ async function extractDetails(url) {
         const response = await soraFetch(url);
         const html = await response.text();
 
-        // Extract the __NUXT__ data from the page
-        const nuxtMatch = html.match(/window\.__NUXT__\s*=\s*({.+?});?\s*<\/script>/s);
-        if (!nuxtMatch) {
-            console.log("Could not find __NUXT__ data");
-            return JSON.stringify([{
-                description: 'Error loading description',
-                aliases: 'Unknown',
-                airdate: 'Released: Unknown'
-            }]);
+        // Try to extract basic info from HTML as fallback
+        const titleMatch = html.match(/<h1[^>]*>([^<]+)<\/h1>/);
+        const metaDescMatch = html.match(/<meta[^>]+name="description"[^>]+content="([^"]+)"/);
+
+        const title = titleMatch ? titleMatch[1].trim() : 'Unknown';
+        const description = metaDescMatch ? metaDescMatch[1].trim() : 'No description available';
+
+        // Try to parse __NUXT__ data (works in Sora app environment)
+        const nuxtMatch = html.match(/window\.__NUXT__\s*=\s*\(function[\s\S]{1,20000}/);
+        if (nuxtMatch) {
+            // In Sora environment, the app can evaluate this JavaScript
+            // For now, return HTML-based data as fallback
+            console.log("Found __NUXT__ data (minified)");
         }
-
-        const nuxtData = JSON.parse(nuxtMatch[1]);
-
-        // Navigate to video info
-        let videoInfo = null;
-        if (nuxtData && nuxtData.data && nuxtData.data[0] && nuxtData.data[0].hentai_video) {
-            videoInfo = nuxtData.data[0].hentai_video;
-        }
-
-        if (!videoInfo) {
-            throw new Error("Video info not found");
-        }
-
-        const description = videoInfo.description || 'No description available';
-        const tags = videoInfo.hentai_tags ? videoInfo.hentai_tags.map(tag => tag.text).join(', ') : 'None';
-        const brand = videoInfo.brand ? videoInfo.brand.title : 'Unknown';
-        const views = videoInfo.views ? videoInfo.views.toLocaleString() : '0';
-
-        const aliases = `Tags: ${tags}\nBrand: ${brand}\nViews: ${views}`;
-        const airdate = `Released: ${videoInfo.released_at_unix ? new Date(videoInfo.released_at_unix * 1000).toLocaleDateString() : 'Unknown'}`;
 
         const transformedResults = [{
-            description,
-            aliases,
-            airdate
+            description: description,
+            aliases: `Title: ${title}`,
+            airdate: 'View video page for release date'
         }];
 
         console.log("Extracted details successfully");

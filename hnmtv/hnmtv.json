@@ -12,7 +12,7 @@
     "quality": "720p",
     "baseUrl": "https://hanime.tv/",
     "searchBaseUrl": "https://hanime.tv/browse/tags/%s",
-    "scriptUrl": "",
+    "scriptUrl": "https://raw.githubusercontent.com/ngodn/soluna/refs/heads/main/hnmtv/hnmtv.js",
     "type": "anime",
     "note": "hanime.tv - Search by tags: glasses, uncensored, teacher, milf, etc. Use 'trending' for latest videos.",
     "asyncJS": true,

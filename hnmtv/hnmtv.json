@@ -1,20 +1,20 @@
 {
     "sourceName": "HnmTV",
-    "iconUrl": "",
+    "iconUrl": "https://raw.githubusercontent.com/ngodn/soluna/refs/heads/main/hnmtv/icon.png",
     "author": {
         "name": "ngodn",
-        "icon": "",
-        "url": ""
+        "icon": "https://avatars.githubusercontent.com/u/1426209?v=4",
+        "url": "https://github.com/ngodn/soluna"
     },
     "version": "1.0.0",
     "language": "English",
     "streamType": "HLS",
-    "quality": "1080p",
+    "quality": "720p",
     "baseUrl": "https://hanime.tv/",
     "searchBaseUrl": "https://hanime.tv/browse/tags/%s",
     "scriptUrl": "",
     "type": "anime",
-    "note": "HnmTV (hanime.tv) - Search by tags: glasses, uncensored, teacher, milf, etc. Use 'trending' for latest videos.",
+    "note": "hanime.tv - Search by tags: glasses, uncensored, teacher, milf, etc. Use 'trending' for latest videos.",
     "asyncJS": true,
     "softsub": false
 }

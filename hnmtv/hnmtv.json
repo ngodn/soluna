@@ -1,0 +1,20 @@
+{
+    "sourceName": "HnmTV",
+    "iconUrl": "",
+    "author": {
+        "name": "ngodn",
+        "icon": "",
+        "url": ""
+    },
+    "version": "1.0.0",
+    "language": "English",
+    "streamType": "HLS",
+    "quality": "1080p",
+    "baseUrl": "https://hanime.tv/",
+    "searchBaseUrl": "https://hanime.tv/browse/tags/%s",
+    "scriptUrl": "",
+    "type": "anime",
+    "note": "HnmTV (hanime.tv) - Search by tags: glasses, uncensored, teacher, milf, etc. Use 'trending' for latest videos.",
+    "asyncJS": true,
+    "softsub": false
+}
